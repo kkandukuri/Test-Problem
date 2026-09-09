@@ -2,17 +2,21 @@ package com.countera.exercise.cart;
 
 import com.countera.exercise.catalog.ProductCatalog;
 import com.countera.exercise.model.Cart;
+import com.countera.exercise.model.CartItem;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * In-memory cart store. No database — a Map is fine.
- *
- * TODO (candidate): implement the three methods.
  */
 @Service
 public class CartService {
 
     private final ProductCatalog catalog;
+    private final Map<String, Cart> carts = new ConcurrentHashMap<>();
 
     public CartService(ProductCatalog catalog) {
         this.catalog = catalog;
@@ -20,12 +24,18 @@ public class CartService {
 
     /** Creates an empty cart with a unique id and stores it. */
     public Cart create() {
-        throw new UnsupportedOperationException("TODO");
+        Cart cart = new Cart(UUID.randomUUID().toString());
+        carts.put(cart.getId(), cart);
+        return cart;
     }
 
     /** @throws CartNotFoundException if no cart has this id */
     public Cart get(String cartId) {
-        throw new UnsupportedOperationException("TODO");
+        Cart cart = carts.get(cartId);
+        if (cart == null) {
+            throw new CartNotFoundException(cartId);
+        }
+        return cart;
     }
 
     /**
@@ -35,6 +45,11 @@ public class CartService {
      * @throws UnknownSkuException   if the SKU is not in the catalog
      */
     public Cart addItem(String cartId, String sku, int quantity) {
-        throw new UnsupportedOperationException("TODO");
+        Cart cart = get(cartId);
+        if (catalog.findProduct(sku).isEmpty()) {
+            throw new UnknownSkuException(sku);
+        }
+        cart.getItems().add(new CartItem(sku, quantity));
+        return cart;
     }
 }
