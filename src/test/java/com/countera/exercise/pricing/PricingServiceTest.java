@@ -115,4 +115,23 @@ class PricingServiceTest {
     }
 
     // ---- Add your own tests below this line -------------------------------------
+
+    @Test
+    void promotionLeavesRemainderAtRegularPrice() {
+        PricedLine line = pricingService.price(cartOf(new CartItem("BEV-002", 4))).lines().get(0);
+
+        assertThat(line.discountCents()).isEqualTo(137);
+        assertThat(line.taxCents()).isEqualTo(42);
+    }
+
+    @Test
+    void lineOrderUsesFirstSkuOccurrence() {
+        CartTotal total = pricingService.price(cartOf(
+                new CartItem("BEV-002", 1),
+                new CartItem("GRO-001", 1),
+                new CartItem("BEV-002", 1)));
+
+        assertThat(total.lines()).extracting(PricedLine::sku)
+                .containsExactly("BEV-002", "GRO-001");
+    }
 }
