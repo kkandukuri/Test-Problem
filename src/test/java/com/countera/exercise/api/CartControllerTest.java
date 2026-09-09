@@ -88,4 +88,18 @@ class CartControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("BAD_REQUEST"));
     }
+
+    @Test
+    void addingSameSkuUpdatesExistingItemQuantity() throws Exception {
+        String cartId = createCart();
+        addItem(cartId, "BEV-001", 1);
+
+        mockMvc.perform(post("/carts/{id}/items", cartId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sku\":\"BEV-001\",\"quantity\":2}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].sku").value("BEV-001"))
+                .andExpect(jsonPath("$.items[0].quantity").value(3));
+    }
 }

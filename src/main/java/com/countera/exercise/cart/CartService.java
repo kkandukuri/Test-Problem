@@ -49,6 +49,14 @@ public class CartService {
         if (catalog.findProduct(sku).isEmpty()) {
             throw new UnknownSkuException(sku);
         }
+        for (int index = 0; index < cart.getItems().size(); index++) {
+            CartItem existingItem = cart.getItems().get(index);
+            if (existingItem.sku().equals(sku)) {
+                cart.getItems().set(index,
+                        new CartItem(sku, Math.addExact(existingItem.quantity(), quantity)));
+                return cart;
+            }
+        }
         cart.getItems().add(new CartItem(sku, quantity));
         return cart;
     }
